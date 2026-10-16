@@ -84,6 +84,42 @@
 
   footer{padding:26px 24px 40px;text-align:center;font-size:13px;color:#8a8977;}
   .confetti{position:fixed;width:9px;height:9px;pointer-events:none;z-index:999;border-radius:2px;}
+
+  /* Crewup working prototype */
+  .prototype{padding:68px 24px;background:#f0ead9;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .prototype .section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;flex-wrap:wrap;margin-bottom:24px;}
+  .prototype h2{font-size:clamp(30px,4vw,42px);margin-bottom:10px;}
+  .prototype .lede{margin:0;color:#55554b;max-width:58ch;}
+  .demo-label{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:3px;font-size:12px;font-weight:600;color:var(--teal);}
+  .demo-dot{width:7px;height:7px;border-radius:50%;background:#d9603b;display:inline-block;}
+  .activity-tools{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 20px;}
+  .activity-tools input,.activity-tools select,.activity-form input,.activity-form select,.activity-form textarea{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:3px;background:#fff;color:var(--ink);min-width:0;}
+  .activity-tools input{flex:1;min-width:180px;}
+  .activity-tools select{min-width:170px;}
+  .activity-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:22px;align-items:start;}
+  .activity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .activity-card,.activity-form-wrap{background:#fff;border:1px solid var(--line);box-shadow:2px 3px 0 rgba(15,46,43,.06);padding:18px;border-radius:4px;min-width:0;}
+  .activity-card h3{font-size:22px;margin:9px 0 8px;}
+  .activity-card p{font-size:14px;color:#55554b;margin:8px 0;}
+  .activity-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+  .activity-pill{display:inline-block;padding:4px 8px;background:#f0ead9;border-radius:2px;font-size:11px;font-weight:600;color:var(--teal);}
+  .activity-count{font-size:13px;font-weight:600;color:var(--teal);margin:12px 0;}
+  .activity-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;}
+  .btn.secondary{background:transparent;color:var(--teal);border:1px solid var(--teal);}
+  .btn.secondary:hover{background:#f0ead9;}
+  .btn.tiny{padding:9px 12px;font-size:13px;}
+  .activity-form-wrap h3{font-size:24px;margin-bottom:6px;}
+  .activity-form-wrap>p{font-size:13px;color:#666457;margin:0 0 16px;}
+  .activity-form{display:grid;gap:10px;}
+  .activity-form label{display:grid;gap:5px;font-size:12px;font-weight:600;color:#4d4d43;}
+  .activity-form .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .activity-form textarea{resize:vertical;min-height:78px;}
+  .prototype-note{font-size:12px;color:#666457;margin-top:16px;max-width:90ch;}
+  .empty-state{padding:28px;border:1px dashed var(--line);background:rgba(255,255,255,.5);color:#666457;font-size:14px;grid-column:1/-1;}
+  .form-message{font-size:13px;margin:10px 0 0;color:var(--teal);min-height:18px;}
+  @media(max-width:800px){.activity-layout{grid-template-columns:1fr;}}
+  @media(max-width:560px){.activity-grid{grid-template-columns:1fr;}.activity-form .two-col{grid-template-columns:1fr;}.prototype{padding:52px 18px;}}
+
 </style>
 </head>
 <body>
@@ -95,9 +131,10 @@
 
 <section class="hero wrap">
   <h1>Find people who actually want to do <em>the same thing</em> as you.</h1>
-  <p class="sub">Post the activity. Crewup finds the people. Verified profiles, real meetups, no more posting into a group chat that goes silent.</p>
+  <p class="sub">Post the activity. Find people who share your interests. A simple prototype for turning “I want to do this” into a plan with others.</p>
   <div class="cta-row">
-    <a class="btn" href="#waitlist">Get early access</a>
+    <a class="btn" href="#activities">Explore activities</a>
+    <a class="btn secondary" href="#waitlist" style="border:1px solid var(--teal);background:transparent;color:var(--teal);">Join waitlist</a>
     <span class="loc">Launching in Gurgaon · Online activities worldwide</span>
   </div>
 </section>
@@ -117,7 +154,7 @@
     </div>
     <div>
       <h3>The fix</h3>
-      <p>Post what you want to do. Browse who's already planning it. Confirm you're in, verified, and see exactly who else is coming.</p>
+      <p>Post what you want to do. Browse who's already planning it, confirm you're interested, and see the headcount update.</p>
     </div>
   </div>
 </section>
@@ -134,7 +171,7 @@
   </div>
   <div class="step-row">
     <div class="n">3</div>
-    <div><h4>Confirm, verified</h4><p>A quick face check before you confirm attendance — so everyone showing up is a real, verified person.</p></div>
+    <div><h4>Confirm attendance</h4><p>See the number of people who have joined. Identity verification and live coordination are planned for a later version.</p></div>
   </div>
 </section>
 
@@ -150,13 +187,110 @@
   </div>
 </section>
 
+
+<section class="prototype" id="activities">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>Find your next crew.</h2>
+        <p class="lede">Browse a few example activities, join one, or post something you'd like to do. Start small; the best plans begin with one person.</p>
+      </div>
+      <span class="demo-label"><span class="demo-dot"></span> Interactive prototype · sample data</span>
+    </div>
+
+    <div class="activity-tools">
+      <input id="activitySearch" type="search" placeholder="Search activities, interests or places…" aria-label="Search activities">
+      <select id="activityCategory" aria-label="Filter by category">
+        <option value="All">All interests</option>
+        <option>Board games (offline)</option>
+        <option>Online games</option>
+        <option>Movie/series nights</option>
+        <option>Outdoor sports</option>
+        <option>Study groups</option>
+        <option>Other</option>
+      </select>
+      <select id="activityFormat" aria-label="Filter by format">
+        <option value="All">Online + offline</option>
+        <option value="Offline">Offline</option>
+        <option value="Online">Online</option>
+      </select>
+    </div>
+
+    <div class="activity-layout">
+      <div class="activity-grid" id="activityGrid" aria-live="polite"></div>
+
+      <aside class="activity-form-wrap">
+        <h3>Post an activity</h3>
+        <p>Have a plan in mind? Add the details and invite your kind of people.</p>
+        <form class="activity-form" id="createActivityForm">
+          <label>Activity name
+            <input id="newTitle" maxlength="70" required placeholder="e.g. Beginner board-game evening">
+          </label>
+          <div class="two-col">
+            <label>Category
+              <select id="newCategory" required>
+                <option>Board games (offline)</option>
+                <option>Online games</option>
+                <option>Movie/series nights</option>
+                <option>Outdoor sports</option>
+                <option>Study groups</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label>Format
+              <select id="newFormat" required>
+                <option>Offline</option>
+                <option>Online</option>
+              </select>
+            </label>
+          </div>
+          <div class="two-col">
+            <label>Date
+              <input id="newDate" type="date" required>
+            </label>
+            <label>Time
+              <input id="newTime" type="time" required value="17:00">
+            </label>
+          </div>
+          <label>Place or online platform
+            <input id="newLocation" maxlength="80" required placeholder="e.g. Sector 29, Gurgaon / Discord">
+          </label>
+          <div class="two-col">
+            <label>Group size
+              <select id="newMax" required>
+                <option value="2">2 people</option>
+                <option value="4" selected>4 people</option>
+                <option value="6">6 people</option>
+                <option value="8">8 people</option>
+                <option value="12">12 people</option>
+              </select>
+            </label>
+            <label>Group preference
+              <select id="newGroup">
+                <option>Everyone welcome</option>
+                <option>Women-only</option>
+              </select>
+            </label>
+          </div>
+          <label>What should people know? (optional)
+            <textarea id="newDescription" maxlength="220" placeholder="Skill level, what to bring, vibe…"></textarea>
+          </label>
+          <button class="btn" type="submit">Post activity</button>
+          <p class="form-message" id="createMessage" role="status"></p>
+        </form>
+      </aside>
+    </div>
+    <p class="prototype-note"><strong>Prototype note:</strong> This demo stores activity posts and attendance in this browser only. It does not create accounts, verify identity, send messages, or sync data between different visitors. Do not enter private or sensitive information. Report controls are illustrative and do not send a report to a moderation team.</p>
+  </div>
+</section>
+
 <section class="trust">
   <div class="wrap">
     <h2>Built to feel safe, not just social</h2>
     <ul>
-      <li><b>Face-verified profiles</b>Everyone confirms who they are before joining — and again if they're ever reported.</li>
+      <li><b>Identity checks — planned</b>Live selfie verification is not enabled in this prototype; it is part of the planned safety roadmap.</li>
       <li><b>See who's coming</b>Confirmed headcounts are visible before you commit to anything.</li>
-      <li><b>Ratings that matter</b>Only people who actually showed up can rate each other.</li>
+      <li><b>Post-event ratings — planned</b>Ratings limited to verified attendees are a planned feature, not active in this demo.</li>
       <li><b>Gender-filtered groups</b>Women-only activity groups, when that's what you're looking for.</li>
     </ul>
   </div>
@@ -192,6 +326,153 @@
 <footer>Crewup · Gurgaon &amp; online<br>Got ideas or feedback? Email me at <a href="mailto:crewup@gmail.com" style="text-decoration:underline;">crewup@gmail.com</a></footer>
 
 <script>
+
+  // Crewup browser-only prototype: sample activities and interactions are saved locally.
+  const CREWUP_STORAGE_KEY = "crewup-prototype-activities-v1";
+  const defaultActivities = [
+    {id:"sample-1",title:"Board-game café afternoon",category:"Board games (offline)",format:"Offline",date:"2026-10-24",time:"16:00",location:"Gurgaon · café to be agreed",max:6,group:"Everyone welcome",description:"Casual games, beginner-friendly. We can choose the café together.",joined:2,createdBy:"Crewup sample"},
+    {id:"sample-2",title:"Casual gaming squad",category:"Online games",format:"Online",date:"2026-10-20",time:"19:30",location:"Discord",max:4,group:"Everyone welcome",description:"Low-pressure games and friendly teammates. Mic optional.",joined:1,createdBy:"Crewup sample"},
+    {id:"sample-3",title:"Quiet 50-minute study sprint",category:"Study groups",format:"Online",date:"2026-10-19",time:"18:00",location:"Google Meet",max:4,group:"Everyone welcome",description:"Pomodoro-style focus session. Share your goal, work quietly, then check in.",joined:2,createdBy:"Crewup sample"},
+    {id:"sample-4",title:"Badminton doubles",category:"Outdoor sports",format:"Offline",date:"2026-10-25",time:"08:00",location:"Gurgaon · court to be agreed",max:4,group:"Everyone welcome",description:"Easygoing doubles game. Players of different levels welcome.",joined:3,createdBy:"Crewup sample"},
+    {id:"sample-5",title:"Comfort-movie night",category:"Movie/series nights",format:"Online",date:"2026-10-22",time:"20:00",location:"Online watch party",max:6,group:"Women-only",description:"Vote on a feel-good movie and watch together. Suggestions welcome.",joined:2,createdBy:"Crewup sample"}
+  ];
+
+  function loadActivities(){
+    try {
+      const stored = localStorage.getItem(CREWUP_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : defaultActivities;
+    } catch (error) {
+      return defaultActivities;
+    }
+  }
+  let activities = loadActivities();
+  function saveActivities(){
+    try { localStorage.setItem(CREWUP_STORAGE_KEY, JSON.stringify(activities)); }
+    catch (error) { console.warn("Local demo storage unavailable", error); }
+  }
+  const joinedIds = new Set();
+  const activityGrid = document.getElementById("activityGrid");
+  const searchInput = document.getElementById("activitySearch");
+  const categoryFilter = document.getElementById("activityCategory");
+  const formatFilter = document.getElementById("activityFormat");
+
+  function escapeHTML(value){
+    return String(value).replace(/[&<>"']/g, function(char){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];
+    });
+  }
+  function prettyDate(dateString){
+    const date = new Date(dateString + "T12:00:00");
+    if (Number.isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+  }
+  function renderActivities(){
+    const term = searchInput.value.trim().toLowerCase();
+    const category = categoryFilter.value;
+    const format = formatFilter.value;
+    const filtered = activities.filter(a => {
+      const text = [a.title,a.category,a.location,a.description,a.group].join(" ").toLowerCase();
+      return (!term || text.includes(term)) &&
+        (category === "All" || a.category === category) &&
+        (format === "All" || a.format === format);
+    });
+    if (!filtered.length){
+      activityGrid.innerHTML = '<div class="empty-state">No activities match those filters yet. Try another search or post the first one.</div>';
+      return;
+    }
+    activityGrid.innerHTML = filtered.map(a => {
+      const isJoined = joinedIds.has(a.id);
+      const full = Number(a.joined) >= Number(a.max);
+      return `<article class="activity-card">
+        <div class="activity-meta"><span class="activity-pill">${escapeHTML(a.category)}</span><span class="activity-pill">${escapeHTML(a.format)}</span></div>
+        <h3>${escapeHTML(a.title)}</h3>
+        <p>📅 ${escapeHTML(prettyDate(a.date))} · ${escapeHTML(a.time)}</p>
+        <p>📍 ${escapeHTML(a.location)}</p>
+        ${a.description ? `<p>${escapeHTML(a.description)}</p>` : ""}
+        <div class="activity-count">${Number(a.joined)} / ${Number(a.max)} spots filled · ${escapeHTML(a.group || "Everyone welcome")}</div>
+        <div class="activity-actions">
+          <button class="btn tiny ${isJoined ? "secondary" : ""}" data-join="${escapeHTML(a.id)}" ${full && !isJoined ? "disabled" : ""}>${isJoined ? "Leave activity" : (full ? "Group full" : "Confirm interest")}</button>
+          <button class="btn secondary tiny" data-report="${escapeHTML(a.id)}">Report</button>
+        </div>
+      </article>`;
+    }).join("");
+  }
+  searchInput.addEventListener("input", renderActivities);
+  categoryFilter.addEventListener("change", renderActivities);
+  formatFilter.addEventListener("change", renderActivities);
+
+  activityGrid.addEventListener("click", function(event){
+    const joinButton = event.target.closest("[data-join]");
+    const reportButton = event.target.closest("[data-report]");
+    if (joinButton){
+      const activity = activities.find(a => a.id === joinButton.dataset.join);
+      if (!activity) return;
+      if (joinedIds.has(activity.id)){
+        joinedIds.delete(activity.id);
+        activity.joined = Math.max(0, Number(activity.joined) - 1);
+      } else {
+        if (Number(activity.joined) >= Number(activity.max)) return;
+        joinedIds.add(activity.id);
+        activity.joined = Number(activity.joined) + 1;
+      }
+      saveActivities();
+      renderActivities();
+    }
+    if (reportButton){
+      const activity = activities.find(a => a.id === reportButton.dataset.report);
+      if (activity && window.confirm("Demo only: would you like to mark this activity for review? No report will be sent or stored.")){
+        window.alert("This prototype has no moderation backend yet. For a real safety concern, do not attend and contact the platform team when support is available.");
+      }
+    }
+  });
+
+  const newDateInput = document.getElementById("newDate");
+  const todayLocal = new Date();
+  const localToday = new Date(todayLocal.getTime() - todayLocal.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  newDateInput.min = localToday;
+  newDateInput.value = "2026-10-26" >= localToday ? "2026-10-26" : localToday;
+
+  document.getElementById("createActivityForm").addEventListener("submit", function(event){
+    event.preventDefault();
+    const title = document.getElementById("newTitle").value.trim();
+    const date = newDateInput.value;
+    if (!title || !date || date < localToday){
+      document.getElementById("createMessage").textContent = "Please add a title and choose today or a future date.";
+      return;
+    }
+    const item = {
+      id:"user-" + Date.now(),
+      title,
+      category:document.getElementById("newCategory").value,
+      format:document.getElementById("newFormat").value,
+      date,
+      time:document.getElementById("newTime").value,
+      location:document.getElementById("newLocation").value.trim(),
+      max:Number(document.getElementById("newMax").value),
+      group:document.getElementById("newGroup").value,
+      description:document.getElementById("newDescription").value.trim(),
+      joined:1,
+      createdBy:"You"
+    };
+    if (!item.location || !item.time){
+      document.getElementById("createMessage").textContent = "Please add the location/platform and time.";
+      return;
+    }
+    activities.unshift(item);
+    joinedIds.add(item.id);
+    saveActivities();
+    this.reset();
+    document.getElementById("newTime").value = "17:00";
+    newDateInput.min = localToday;
+    newDateInput.value = "2026-10-26" >= localToday ? "2026-10-26" : localToday;
+    document.getElementById("createMessage").textContent = "Activity posted in this browser. You are counted as the first interested person.";
+    searchInput.value = "";
+    categoryFilter.value = "All";
+    formatFilter.value = "All";
+    renderActivities();
+  });
+  renderActivities();
+
   const header = document.getElementById('siteHeader');
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 20);
