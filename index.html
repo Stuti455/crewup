@@ -1,524 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Crewup — find people who want to do what you want to do</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crewup — Find your people</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root{
-    --ink:#1A1A16; --paper:#F6F1E4; --teal:#0F2E2B; --teal-2:#1E4A42;
-    --amber:#E8A33D; --coral:#D9603B; --line:rgba(15,46,43,0.16);
-    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  *{box-sizing:border-box;}
-  html{scroll-padding-top:env(safe-area-inset-top,0px);}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;line-height:1.5;}
-  h1,h2,h3{font-family:'Fraunces',serif;margin:0;line-height:1.05;}
-  a{color:inherit;}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
-  header.top{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:22px 24px;transition:padding .3s ease,background .3s ease,border-color .3s ease,backdrop-filter .3s ease;border-bottom:1px solid transparent;}
-  header.top.scrolled{padding:14px 24px;background:rgba(246,241,228,0.85);backdrop-filter:blur(10px);border-bottom-color:var(--line);}
-  .mark{font-family:'Fraunces',serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;}
-  .btn{display:inline-block;background:var(--teal);color:var(--paper);border:none;padding:12px 22px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;border-radius:3px;cursor:pointer;text-decoration:none;}
-  .btn:hover{background:var(--teal-2);}
-  .btn.small{padding:9px 16px;font-size:13.5px;}
-
-  .hero{padding:48px 24px 0;}
-  .hero h1{font-size:clamp(38px,6vw,64px);font-weight:600;max-width:11ch;}
-  .hero h1 em{font-style:italic;color:var(--coral);}
-  .hero p.sub{margin-top:20px;font-size:19px;max-width:46ch;color:#3B3B34;}
-  .hero .cta-row{margin-top:30px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
-  .hero .loc{font-size:14px;color:#6b6a5f;}
-
-  .marquee{margin-top:44px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:14px 0;}
-  .marquee-track{display:flex;width:max-content;animation:scroll 22s linear infinite;}
-  .marquee-track span{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--teal-2);padding:0 28px;white-space:nowrap;}
-  .marquee-track span::after{content:"·";color:var(--line);margin-left:28px;}
-  @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-  @media(prefers-reduced-motion:reduce){.marquee-track{animation:none;}}
-
-  .strip{background:var(--teal);color:var(--paper);padding:46px 24px;margin-top:70px;}
-  .strip .grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
-  .strip h3{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);font-family:'Work Sans',sans-serif;font-weight:600;margin-bottom:10px;}
-  .strip p{margin:0;font-size:17px;color:#E7E4D6;}
-  @media(max-width:720px){.strip .grid{grid-template-columns:1fr;}}
-
-  .steps{padding:64px 24px;}
-  .steps h2{font-size:32px;margin-bottom:36px;}
-  .step-row{display:flex;gap:28px;border-top:1px solid var(--line);padding:22px 0;align-items:baseline;}
-  .step-row .n{font-family:'Fraunces',serif;font-size:26px;color:var(--coral);width:34px;flex-shrink:0;}
-  .step-row h4{font-family:'Work Sans',sans-serif;font-weight:600;font-size:18px;margin-bottom:4px;}
-  .step-row p{margin:0;color:#4a4a41;font-size:15.5px;max-width:52ch;}
-
-  .cats{padding:20px 24px 70px;}
-  .cats h2{font-size:32px;margin-bottom:8px;}
-  .cats .lede{color:#4a4a41;margin-bottom:34px;font-size:16px;}
-  .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
-  @media(max-width:820px){.card-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:480px){.card-grid{grid-template-columns:1fr;}}
-  .card{background:#fff;border:1px solid var(--line);padding:22px 18px 26px;position:relative;box-shadow:2px 3px 0 rgba(15,46,43,0.07);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease,border-color .25s ease;}
-  .card:nth-child(1){transform:rotate(-1.1deg);}
-  .card:nth-child(2){transform:rotate(0.8deg);}
-  .card:nth-child(3){transform:rotate(-0.6deg);}
-  .card:nth-child(4){transform:rotate(1.2deg);}
-  .card:nth-child(5){transform:rotate(-0.4deg);}
-  .card:hover{transform:rotate(0deg) translateY(-6px);box-shadow:0 14px 30px rgba(15,46,43,0.14);border-color:var(--coral);}
-  .card .pin{position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:var(--coral);box-shadow:0 1px 2px rgba(0,0,0,.3);}
-  .card .ic{width:24px;height:24px;margin-bottom:10px;color:var(--coral);}
-  .card h4{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin-bottom:6px;}
-  .card p{margin:0;font-size:14px;color:#5a5a4f;}
-
-  .trust{background:#EFE9D6;padding:60px 24px;}
-  .trust .wrap{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;}
-  @media(max-width:720px){.trust .wrap{grid-template-columns:1fr;}}
-  .trust h2{font-size:30px;max-width:11ch;}
-  .trust ul{list-style:none;margin:0;padding:0;}
-  .trust li{border-top:1px solid var(--line);padding:16px 0;font-size:15.5px;}
-  .trust li b{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;margin-bottom:3px;}
-
-  .wl{padding:80px 24px;text-align:center;}
-  .wl h2{font-size:clamp(30px,4.5vw,44px);max-width:16ch;margin:0 auto 14px;}
-  .wl p{color:#4a4a41;font-size:16.5px;max-width:44ch;margin:0 auto 30px;}
-
-  footer{padding:26px 24px 40px;text-align:center;font-size:13px;color:#8a8977;}
-  .confetti{position:fixed;width:9px;height:9px;pointer-events:none;z-index:999;border-radius:2px;}
-
-  /* Crewup working prototype */
-  .prototype{padding:68px 24px;background:#f0ead9;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-  .prototype .section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;flex-wrap:wrap;margin-bottom:24px;}
-  .prototype h2{font-size:clamp(30px,4vw,42px);margin-bottom:10px;}
-  .prototype .lede{margin:0;color:#55554b;max-width:58ch;}
-  .demo-label{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:3px;font-size:12px;font-weight:600;color:var(--teal);}
-  .demo-dot{width:7px;height:7px;border-radius:50%;background:#d9603b;display:inline-block;}
-  .activity-tools{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 20px;}
-  .activity-tools input,.activity-tools select,.activity-form input,.activity-form select,.activity-form textarea{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:3px;background:#fff;color:var(--ink);min-width:0;}
-  .activity-tools input{flex:1;min-width:180px;}
-  .activity-tools select{min-width:170px;}
-  .activity-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:22px;align-items:start;}
-  .activity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
-  .activity-card,.activity-form-wrap{background:#fff;border:1px solid var(--line);box-shadow:2px 3px 0 rgba(15,46,43,.06);padding:18px;border-radius:4px;min-width:0;}
-  .activity-card h3{font-size:22px;margin:9px 0 8px;}
-  .activity-card p{font-size:14px;color:#55554b;margin:8px 0;}
-  .activity-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
-  .activity-pill{display:inline-block;padding:4px 8px;background:#f0ead9;border-radius:2px;font-size:11px;font-weight:600;color:var(--teal);}
-  .activity-count{font-size:13px;font-weight:600;color:var(--teal);margin:12px 0;}
-  .activity-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;}
-  .btn.secondary{background:transparent;color:var(--teal);border:1px solid var(--teal);}
-  .btn.secondary:hover{background:#f0ead9;}
-  .btn.tiny{padding:9px 12px;font-size:13px;}
-  .activity-form-wrap h3{font-size:24px;margin-bottom:6px;}
-  .activity-form-wrap>p{font-size:13px;color:#666457;margin:0 0 16px;}
-  .activity-form{display:grid;gap:10px;}
-  .activity-form label{display:grid;gap:5px;font-size:12px;font-weight:600;color:#4d4d43;}
-  .activity-form .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .activity-form textarea{resize:vertical;min-height:78px;}
-  .prototype-note{font-size:12px;color:#666457;margin-top:16px;max-width:90ch;}
-  .empty-state{padding:28px;border:1px dashed var(--line);background:rgba(255,255,255,.5);color:#666457;font-size:14px;grid-column:1/-1;}
-  .form-message{font-size:13px;margin:10px 0 0;color:var(--teal);min-height:18px;}
-  @media(max-width:800px){.activity-layout{grid-template-columns:1fr;}}
-  @media(max-width:560px){.activity-grid{grid-template-columns:1fr;}.activity-form .two-col{grid-template-columns:1fr;}.prototype{padding:52px 18px;}}
-
+:root{--ink:#172c29;--paper:#f6f3eb;--green:#174b40;--mint:#dce9df;--orange:#e7a449;--coral:#c95f43;--line:#d9ddd3;--muted:#6b7770;--white:#fffdf8}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px 'DM Sans',sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.shell{max-width:1180px;margin:auto;padding:0 24px}.top{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--paper);position:sticky;top:0;z-index:10}.brand{font:700 26px Fraunces,serif;letter-spacing:-1px}.brand span{color:var(--coral)}.topright{display:flex;align-items:center;gap:12px}.pill{background:var(--mint);border-radius:99px;padding:8px 12px;font-size:12px;font-weight:700}.btn{border:0;border-radius:9px;background:var(--green);color:white;padding:12px 17px;font-weight:700}.btn:hover{filter:brightness(1.08)}.btn.secondary{background:transparent;color:var(--green);border:1px solid #9db3a6}.btn.ghost{background:transparent;color:var(--muted);padding:8px}.btn:disabled{opacity:.45;cursor:not-allowed}.hero{padding:38px 0 26px;display:flex;justify-content:space-between;gap:28px;align-items:end}.eyebrow{color:var(--coral);font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase}.hero h1{font:600 clamp(35px,5vw,58px)/1.03 Fraunces,serif;max-width:650px;margin:10px 0}.hero p{color:var(--muted);font-size:16px;max-width:530px;line-height:1.6}.hero-art{background:var(--mint);border-radius:18px;padding:22px 25px;min-width:190px;transform:rotate(2deg)}.hero-art strong{font:600 25px Fraunces,serif;display:block}.hero-art span{font-size:12px;color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.search{flex:1;min-width:220px}.field,select,textarea{width:100%;border:1px solid var(--line);background:var(--white);border-radius:9px;padding:12px;color:var(--ink);outline:none}.field:focus,select:focus,textarea:focus{border-color:var(--green)}.toolbar select{width:auto;min-width:140px}.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:12px 0 22px;overflow:auto}.tab{border:0;background:transparent;color:var(--muted);padding:12px 16px;border-bottom:3px solid transparent;white-space:nowrap;font-weight:700}.tab.active{color:var(--green);border-bottom-color:var(--coral)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;padding-bottom:50px}.activity{background:var(--white);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:290px}.activity-top{padding:17px 18px 9px;display:flex;justify-content:space-between;align-items:center}.cat{font-size:11px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;color:var(--green)}.online{font-size:11px;background:#edf0e9;border-radius:99px;padding:5px 8px}.activity h3{font:600 24px/1.1 Fraunces,serif;padding:7px 18px}.desc{padding:0 18px;color:var(--muted);font-size:13px;line-height:1.5;min-height:40px}.meta{padding:13px 18px;display:grid;gap:7px;font-size:12px;color:#526159}.cardfoot{margin-top:auto;padding:13px 18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}.spots{font-size:12px;color:var(--muted)}.empty{grid-column:1/-1;text-align:center;padding:55px 20px;border:1px dashed #b9c9bd;border-radius:14px}.empty h3{font:600 28px Fraunces,serif;margin:0 0 8px}.empty p{color:var(--muted)}.notice{padding:12px 15px;border-radius:10px;background:#fff1d8;color:#684c1d;font-size:13px;margin:12px 0}.status{font-size:13px;color:var(--muted);min-height:20px}.hidden{display:none!important}.modalback{position:fixed;inset:0;background:#10221fc2;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.modal{width:min(520px,100%);background:var(--paper);border-radius:16px;padding:25px;max-height:90vh;overflow:auto}.modal h2{font:600 30px Fraunces,serif;margin-bottom:7px}.modal p{color:var(--muted);line-height:1.5}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgrid .full{grid-column:1/-1}.label{font-size:12px;font-weight:700;display:block;margin:12px 0 6px}.actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}.profilebox{max-width:700px;background:var(--white);border:1px solid var(--line);padding:25px;border-radius:14px;margin-bottom:50px}.profilebox h2{font:600 30px Fraunces,serif}.metricrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.metric{background:var(--mint);border-radius:10px;padding:14px}.metric strong{display:block;font-size:20px}.metric span{font-size:11px;color:var(--muted)}footer{padding:22px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-art{display:none}}@media(max-width:580px){.shell{padding:0 15px}.top{height:65px}.hero{padding-top:28px}.grid{grid-template-columns:1fr}.toolbar select{flex:1}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.topright .pill{display:none}.metricrow{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-
-<header class="top" id="siteHeader">
-  <div class="mark">Crewup</div>
-  <a class="btn small" href="#waitlist">Join waitlist</a>
-</header>
-
-<section class="hero wrap">
-  <h1>Find people who actually want to do <em>the same thing</em> as you.</h1>
-  <p class="sub">Post the activity. Find people who share your interests. A simple prototype for turning “I want to do this” into a plan with others.</p>
-  <div class="cta-row">
-    <a class="btn" href="#activities">Explore activities</a>
-    <a class="btn secondary" href="#waitlist" style="border:1px solid var(--teal);background:transparent;color:var(--teal);">Join waitlist</a>
-    <span class="loc">Launching in Gurgaon · Online activities worldwide</span>
-  </div>
-</section>
-
-<div class="marquee">
-  <div class="marquee-track">
-    <span>Board games (offline)</span><span>Online games</span><span>Movie/series nights</span><span>Outdoor sports</span><span>Study groups</span>
-    <span>Board games (offline)</span><span>Online games</span><span>Movie/series nights</span><span>Outdoor sports</span><span>Study groups</span>
-  </div>
-</div>
-
-<section class="strip">
-  <div class="wrap grid">
-    <div>
-      <h3>The problem</h3>
-      <p>Reddit threads die. Discord servers go quiet. WhatsApp groups have no verification and no structure — so niche interests stay lonely.</p>
-    </div>
-    <div>
-      <h3>The fix</h3>
-      <p>Post what you want to do. Browse who's already planning it, confirm you're interested, and see the headcount update.</p>
-    </div>
-  </div>
-</section>
-
-<section class="steps wrap">
-  <h2>How it works</h2>
-  <div class="step-row">
-    <div class="n">1</div>
-    <div><h4>Post an activity</h4><p>Board games Saturday, a badminton partner, a coding study group — say what you want to do and when.</p></div>
-  </div>
-  <div class="step-row">
-    <div class="n">2</div>
-    <div><h4>Find your people</h4><p>Others browse and message you. See who's already confirmed before you commit.</p></div>
-  </div>
-  <div class="step-row">
-    <div class="n">3</div>
-    <div><h4>Confirm attendance</h4><p>See the number of people who have joined. Identity verification and live coordination are planned for a later version.</p></div>
-  </div>
-</section>
-
-<section class="cats wrap">
-  <h2>Start with what you're into</h2>
-  <p class="lede">More categories added as the community grows.</p>
-  <div class="card-grid">
-    <div class="card"><div class="pin"></div><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg><h4>Board games (offline)</h4><p>Pick a game, pick a spot, find people to play it with.</p></div>
-    <div class="card"><div class="pin"></div><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="11" rx="3"/><path d="M8 11v4M6 13h4M15 11.5h.01M18 13.5h.01"/></svg><h4>Online games</h4><p>Squad up for your game of choice, no randoms required.</p></div>
-    <div class="card"><div class="pin"></div><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg><h4>Movie/series nights</h4><p>Find people who actually want to watch what you want to watch.</p></div>
-    <div class="card"><div class="pin"></div><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="5" r="2"/><path d="M12 7v6l-4 8M12 13l4 8M8 11l-3 2M16 11l3 2"/></svg><h4>Outdoor sports</h4><p>Badminton, cycling, a climb — partners who show up.</p></div>
-    <div class="card"><div class="pin"></div><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5V6a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1v13"/><path d="M6.5 17H20v3H6.5a2.5 2.5 0 0 1 0-5"/></svg><h4>Study groups</h4><p>Focused sessions, accountability, actual momentum.</p></div>
-  </div>
-</section>
-
-
-<section class="prototype" id="activities">
-  <div class="wrap">
-    <div class="section-head">
-      <div>
-        <h2>Find your next crew.</h2>
-        <p class="lede">Browse a few example activities, join one, or post something you'd like to do. Start small; the best plans begin with one person.</p>
-      </div>
-      <span class="demo-label"><span class="demo-dot"></span> Interactive prototype · sample data</span>
-    </div>
-
-    <div class="activity-tools">
-      <input id="activitySearch" type="search" placeholder="Search activities, interests or places…" aria-label="Search activities">
-      <select id="activityCategory" aria-label="Filter by category">
-        <option value="All">All interests</option>
-        <option>Board games (offline)</option>
-        <option>Online games</option>
-        <option>Movie/series nights</option>
-        <option>Outdoor sports</option>
-        <option>Study groups</option>
-        <option>Other</option>
-      </select>
-      <select id="activityFormat" aria-label="Filter by format">
-        <option value="All">Online + offline</option>
-        <option value="Offline">Offline</option>
-        <option value="Online">Online</option>
-      </select>
-    </div>
-
-    <div class="activity-layout">
-      <div class="activity-grid" id="activityGrid" aria-live="polite"></div>
-
-      <aside class="activity-form-wrap">
-        <h3>Post an activity</h3>
-        <p>Have a plan in mind? Add the details and invite your kind of people.</p>
-        <form class="activity-form" id="createActivityForm">
-          <label>Activity name
-            <input id="newTitle" maxlength="70" required placeholder="e.g. Beginner board-game evening">
-          </label>
-          <div class="two-col">
-            <label>Category
-              <select id="newCategory" required>
-                <option>Board games (offline)</option>
-                <option>Online games</option>
-                <option>Movie/series nights</option>
-                <option>Outdoor sports</option>
-                <option>Study groups</option>
-                <option>Other</option>
-              </select>
-            </label>
-            <label>Format
-              <select id="newFormat" required>
-                <option>Offline</option>
-                <option>Online</option>
-              </select>
-            </label>
-          </div>
-          <div class="two-col">
-            <label>Date
-              <input id="newDate" type="date" required>
-            </label>
-            <label>Time
-              <input id="newTime" type="time" required value="17:00">
-            </label>
-          </div>
-          <label>Place or online platform
-            <input id="newLocation" maxlength="80" required placeholder="e.g. Sector 29, Gurgaon / Discord">
-          </label>
-          <div class="two-col">
-            <label>Group size
-              <select id="newMax" required>
-                <option value="2">2 people</option>
-                <option value="4" selected>4 people</option>
-                <option value="6">6 people</option>
-                <option value="8">8 people</option>
-                <option value="12">12 people</option>
-              </select>
-            </label>
-            <label>Group preference
-              <select id="newGroup">
-                <option>Everyone welcome</option>
-                <option>Women-only</option>
-              </select>
-            </label>
-          </div>
-          <label>What should people know? (optional)
-            <textarea id="newDescription" maxlength="220" placeholder="Skill level, what to bring, vibe…"></textarea>
-          </label>
-          <button class="btn" type="submit">Post activity</button>
-          <p class="form-message" id="createMessage" role="status"></p>
-        </form>
-      </aside>
-    </div>
-    <p class="prototype-note"><strong>Prototype note:</strong> This demo stores activity posts and attendance in this browser only. It does not create accounts, verify identity, send messages, or sync data between different visitors. Do not enter private or sensitive information. Report controls are illustrative and do not send a report to a moderation team.</p>
-  </div>
-</section>
-
-<section class="trust">
-  <div class="wrap">
-    <h2>Built to feel safe, not just social</h2>
-    <ul>
-      <li><b>Identity checks — planned</b>Live selfie verification is not enabled in this prototype; it is part of the planned safety roadmap.</li>
-      <li><b>See who's coming</b>Confirmed headcounts are visible before you commit to anything.</li>
-      <li><b>Post-event ratings — planned</b>Ratings limited to verified attendees are a planned feature, not active in this demo.</li>
-      <li><b>Gender-filtered groups</b>Women-only activity groups, when that's what you're looking for.</li>
-    </ul>
-  </div>
-</section>
-
-<section class="wl wrap" id="waitlist">
-  <h2>Be first in when we open in Gurgaon</h2>
-  <p>Tell us a bit about you — we'll reach out the moment early access opens.</p>
-  <form id="waitlistForm" style="display:grid;gap:12px;max-width:440px;margin:0 auto;text-align:left;">
-    <input id="wlName" type="text" required placeholder="Full name" style="padding:12px 16px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;color:var(--ink);">
-    <input id="wlPhone" type="tel" required placeholder="Phone number" style="padding:12px 16px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;color:var(--ink);">
-    <input id="wlEmail" type="email" required placeholder="Email" style="padding:12px 16px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;color:var(--ink);">
-    <input id="wlLocation" type="text" required placeholder="Location (e.g. Gurgaon, or Online)" style="padding:12px 16px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;color:var(--ink);">
-    <fieldset style="border:1px solid var(--line);border-radius:3px;padding:14px 16px;">
-      <legend style="font-size:13.5px;padding:0 6px;color:#5a5a4f;">What activities are you interested in?</legend>
-      <div style="display:flex;flex-direction:column;gap:9px;font-size:15px;">
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" class="wlAct" value="Board games (offline)"> Board games (offline)</label>
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" class="wlAct" value="Online games"> Online games</label>
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" class="wlAct" value="Movie/series nights"> Movie/series nights</label>
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" class="wlAct" value="Outdoor sports"> Outdoor sports</label>
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" class="wlAct" value="Study groups"> Study groups</label>
-        <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="wlActOtherCheck"> Other:
-          <input type="text" id="wlActOtherText" placeholder="tell us" style="flex:1;padding:6px 10px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:14px;">
-        </label>
-      </div>
-    </fieldset>
-    <textarea id="wlReason" required placeholder="Why are you interested?" rows="3" style="padding:12px 16px;border:1px solid var(--line);border-radius:3px;font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;color:var(--ink);resize:vertical;"></textarea>
-    <button class="btn" type="submit" style="justify-self:center;margin-top:4px;">Join the waitlist</button>
-  </form>
-  <p id="wlNote" style="font-size:13px;color:#8a8977;margin-top:14px;">Opens a confirm screen with your details filled in — one tap to send.</p>
-</section>
-
-<footer>Crewup · Gurgaon &amp; online<br>Got ideas or feedback? Email me at <a href="mailto:crewup@gmail.com" style="text-decoration:underline;">crewup@gmail.com</a></footer>
-
+<header class="top"><div class="shell" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:14px"><div class="brand">crew<span>up</span></div><div class="topright"><span id="trialPill" class="pill hidden"></span><button id="authBtn" class="btn">Sign in / Join</button><button id="signoutBtn" class="btn secondary hidden">Sign out</button></div></div></header>
+<main class="shell">
+<section class="hero"><div><div class="eyebrow">Your people are out there</div><h1>Less scrolling.<br>More doing.</h1><p>Find people who want to do what you want to do — from board-game nights and study sessions to sports and online gaming.</p></div><div class="hero-art"><strong>Find your crew.</strong><span>Make plans. Show up. Repeat.</span></div></section>
+<div id="globalNotice" class="notice">Browse activities for free. Sign up to start your 10-day full-feature trial. Activity fees are waived during the trial.</div>
+<div class="toolbar"><input id="search" class="field search" placeholder="Search activities, interests, places…"><select id="categoryFilter"><option value="">All activities</option><option>Board games</option><option>Online games</option><option>Movie / series night</option><option>Outdoor sports</option><option>Study group</option><option>Other</option></select><select id="modeFilter"><option value="">Online & offline</option><option value="online">Online</option><option value="offline">In person</option></select><button id="createBtn" class="btn">＋ Create activity</button></div>
+<nav class="tabs"><button class="tab active" data-view="discover">Discover</button><button class="tab" data-view="mine">My activities</button><button class="tab" data-view="profile">My account</button></nav>
+<div id="status" class="status" role="status"></div>
+<section id="discoverView"><div id="activityGrid" class="grid"></div></section>
+<section id="mineView" class="hidden"><div id="mineGrid" class="grid"></div></section>
+<section id="profileView" class="hidden"><div id="profileContent" class="profilebox"></div></section>
+<footer><span>© Crewup · Find your people, do your thing.</span><span>Prototype launch · Payments are not yet enabled</span></footer>
+</main>
+<div id="modalRoot"></div>
 <script>
-
-  // Crewup browser-only prototype: sample activities and interactions are saved locally.
-  const CREWUP_STORAGE_KEY = "crewup-prototype-activities-v1";
-  const defaultActivities = [
-    {id:"sample-1",title:"Board-game café afternoon",category:"Board games (offline)",format:"Offline",date:"2026-10-24",time:"16:00",location:"Gurgaon · café to be agreed",max:6,group:"Everyone welcome",description:"Casual games, beginner-friendly. We can choose the café together.",joined:2,createdBy:"Crewup sample"},
-    {id:"sample-2",title:"Casual gaming squad",category:"Online games",format:"Online",date:"2026-10-20",time:"19:30",location:"Discord",max:4,group:"Everyone welcome",description:"Low-pressure games and friendly teammates. Mic optional.",joined:1,createdBy:"Crewup sample"},
-    {id:"sample-3",title:"Quiet 50-minute study sprint",category:"Study groups",format:"Online",date:"2026-10-19",time:"18:00",location:"Google Meet",max:4,group:"Everyone welcome",description:"Pomodoro-style focus session. Share your goal, work quietly, then check in.",joined:2,createdBy:"Crewup sample"},
-    {id:"sample-4",title:"Badminton doubles",category:"Outdoor sports",format:"Offline",date:"2026-10-25",time:"08:00",location:"Gurgaon · court to be agreed",max:4,group:"Everyone welcome",description:"Easygoing doubles game. Players of different levels welcome.",joined:3,createdBy:"Crewup sample"},
-    {id:"sample-5",title:"Comfort-movie night",category:"Movie/series nights",format:"Online",date:"2026-10-22",time:"20:00",location:"Online watch party",max:6,group:"Women-only",description:"Vote on a feel-good movie and watch together. Suggestions welcome.",joined:2,createdBy:"Crewup sample"}
-  ];
-
-  function loadActivities(){
-    try {
-      const stored = localStorage.getItem(CREWUP_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : defaultActivities;
-    } catch (error) {
-      return defaultActivities;
-    }
-  }
-  let activities = loadActivities();
-  function saveActivities(){
-    try { localStorage.setItem(CREWUP_STORAGE_KEY, JSON.stringify(activities)); }
-    catch (error) { console.warn("Local demo storage unavailable", error); }
-  }
-  const joinedIds = new Set();
-  const activityGrid = document.getElementById("activityGrid");
-  const searchInput = document.getElementById("activitySearch");
-  const categoryFilter = document.getElementById("activityCategory");
-  const formatFilter = document.getElementById("activityFormat");
-
-  function escapeHTML(value){
-    return String(value).replace(/[&<>"']/g, function(char){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];
-    });
-  }
-  function prettyDate(dateString){
-    const date = new Date(dateString + "T12:00:00");
-    if (Number.isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
-  }
-  function renderActivities(){
-    const term = searchInput.value.trim().toLowerCase();
-    const category = categoryFilter.value;
-    const format = formatFilter.value;
-    const filtered = activities.filter(a => {
-      const text = [a.title,a.category,a.location,a.description,a.group].join(" ").toLowerCase();
-      return (!term || text.includes(term)) &&
-        (category === "All" || a.category === category) &&
-        (format === "All" || a.format === format);
-    });
-    if (!filtered.length){
-      activityGrid.innerHTML = '<div class="empty-state">No activities match those filters yet. Try another search or post the first one.</div>';
-      return;
-    }
-    activityGrid.innerHTML = filtered.map(a => {
-      const isJoined = joinedIds.has(a.id);
-      const full = Number(a.joined) >= Number(a.max);
-      return `<article class="activity-card">
-        <div class="activity-meta"><span class="activity-pill">${escapeHTML(a.category)}</span><span class="activity-pill">${escapeHTML(a.format)}</span></div>
-        <h3>${escapeHTML(a.title)}</h3>
-        <p>📅 ${escapeHTML(prettyDate(a.date))} · ${escapeHTML(a.time)}</p>
-        <p>📍 ${escapeHTML(a.location)}</p>
-        ${a.description ? `<p>${escapeHTML(a.description)}</p>` : ""}
-        <div class="activity-count">${Number(a.joined)} / ${Number(a.max)} spots filled · ${escapeHTML(a.group || "Everyone welcome")}</div>
-        <div class="activity-actions">
-          <button class="btn tiny ${isJoined ? "secondary" : ""}" data-join="${escapeHTML(a.id)}" ${full && !isJoined ? "disabled" : ""}>${isJoined ? "Leave activity" : (full ? "Group full" : "Confirm interest")}</button>
-          <button class="btn secondary tiny" data-report="${escapeHTML(a.id)}">Report</button>
-        </div>
-      </article>`;
-    }).join("");
-  }
-  searchInput.addEventListener("input", renderActivities);
-  categoryFilter.addEventListener("change", renderActivities);
-  formatFilter.addEventListener("change", renderActivities);
-
-  activityGrid.addEventListener("click", function(event){
-    const joinButton = event.target.closest("[data-join]");
-    const reportButton = event.target.closest("[data-report]");
-    if (joinButton){
-      const activity = activities.find(a => a.id === joinButton.dataset.join);
-      if (!activity) return;
-      if (joinedIds.has(activity.id)){
-        joinedIds.delete(activity.id);
-        activity.joined = Math.max(0, Number(activity.joined) - 1);
-      } else {
-        if (Number(activity.joined) >= Number(activity.max)) return;
-        joinedIds.add(activity.id);
-        activity.joined = Number(activity.joined) + 1;
-      }
-      saveActivities();
-      renderActivities();
-    }
-    if (reportButton){
-      const activity = activities.find(a => a.id === reportButton.dataset.report);
-      if (activity && window.confirm("Demo only: would you like to mark this activity for review? No report will be sent or stored.")){
-        window.alert("This prototype has no moderation backend yet. For a real safety concern, do not attend and contact the platform team when support is available.");
-      }
-    }
-  });
-
-  const newDateInput = document.getElementById("newDate");
-  const todayLocal = new Date();
-  const localToday = new Date(todayLocal.getTime() - todayLocal.getTimezoneOffset()*60000).toISOString().slice(0,10);
-  newDateInput.min = localToday;
-  newDateInput.value = "2026-10-26" >= localToday ? "2026-10-26" : localToday;
-
-  document.getElementById("createActivityForm").addEventListener("submit", function(event){
-    event.preventDefault();
-    const title = document.getElementById("newTitle").value.trim();
-    const date = newDateInput.value;
-    if (!title || !date || date < localToday){
-      document.getElementById("createMessage").textContent = "Please add a title and choose today or a future date.";
-      return;
-    }
-    const item = {
-      id:"user-" + Date.now(),
-      title,
-      category:document.getElementById("newCategory").value,
-      format:document.getElementById("newFormat").value,
-      date,
-      time:document.getElementById("newTime").value,
-      location:document.getElementById("newLocation").value.trim(),
-      max:Number(document.getElementById("newMax").value),
-      group:document.getElementById("newGroup").value,
-      description:document.getElementById("newDescription").value.trim(),
-      joined:1,
-      createdBy:"You"
-    };
-    if (!item.location || !item.time){
-      document.getElementById("createMessage").textContent = "Please add the location/platform and time.";
-      return;
-    }
-    activities.unshift(item);
-    joinedIds.add(item.id);
-    saveActivities();
-    this.reset();
-    document.getElementById("newTime").value = "17:00";
-    newDateInput.min = localToday;
-    newDateInput.value = "2026-10-26" >= localToday ? "2026-10-26" : localToday;
-    document.getElementById("createMessage").textContent = "Activity posted in this browser. You are counted as the first interested person.";
-    searchInput.value = "";
-    categoryFilter.value = "All";
-    formatFilter.value = "All";
-    renderActivities();
-  });
-  renderActivities();
-
-  const header = document.getElementById('siteHeader');
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 20);
-  });
-
-  // Placeholder values — replace once the real Google Form pre-fill link is provided.
-  const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSfzFEDN_GqN4MbhY9hutBCDz4ACRT79QKLsidpwyx5ZfP4csA/viewform";
-  const ENTRY = { name: "entry.393432300", phone: "entry.1875192835", email: "entry.973602122", location: "entry.1688882398", activities: "entry.1879279365", reason: "entry.1403124362" };
-
-  document.getElementById('waitlistForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const params = new URLSearchParams();
-    params.set(ENTRY.name, document.getElementById('wlName').value.trim());
-    params.set(ENTRY.phone, document.getElementById('wlPhone').value.trim());
-    params.set(ENTRY.email, document.getElementById('wlEmail').value.trim());
-    params.set(ENTRY.location, document.getElementById('wlLocation').value.trim());
-    document.querySelectorAll('.wlAct:checked').forEach(cb => params.append(ENTRY.activities, cb.value));
-    const otherChecked = document.getElementById('wlActOtherCheck').checked;
-    const otherText = document.getElementById('wlActOtherText').value.trim();
-    if(otherChecked && otherText){
-      params.append(ENTRY.activities, "__other_option__");
-      params.set(ENTRY.activities + ".other_option_response", otherText);
-    }
-    params.set(ENTRY.reason, document.getElementById('wlReason').value.trim());
-    burstConfetti();
-    window.open(FORM_BASE + "?" + params.toString(), "_blank");
-  });
-
-  function burstConfetti(){
-    const colors = ['#E8A33D','#D9603B','#66D9B0','#4FB8D9','#8B6FD9'];
-    const originX = window.innerWidth/2, originY = window.innerHeight/2;
-    for(let i=0;i<28;i++){
-      const el = document.createElement('div');
-      el.className = 'confetti';
-      el.style.left = originX+'px';
-      el.style.top = originY+'px';
-      el.style.background = colors[i % colors.length];
-      document.body.appendChild(el);
-      const angle = Math.random()*Math.PI*2, dist = 120+Math.random()*160;
-      const dx = Math.cos(angle)*dist, dy = Math.sin(angle)*dist - 60;
-      el.animate([
-        {transform:'translate(0,0) rotate(0deg)', opacity:1},
-        {transform:`translate(${dx}px,${dy}px) rotate(${Math.random()*360}deg)`, opacity:0}
-      ], {duration:900+Math.random()*500, easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish = () => el.remove();
-    }
-  }
+const SUPABASE_URL = "https://ryujemlgmgamdpozajui.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Blo4u60yJInlqTskaIYNlQ_gFr8AvXI";
+const configured = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_PUBLISHABLE_KEY.includes("PASTE_");
+const db = configured && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+let currentUser=null, profile=null, activities=[], participants=[], view="discover";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate=d=>new Date(d).toLocaleString([], {weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+function say(msg){$("status").textContent=msg||""}
+function isTrial(){return profile?.trial_ends_at && new Date(profile.trial_ends_at)>new Date()}
+function trialText(){if(!profile?.trial_ends_at)return "Trial begins when you sign up";const left=Math.max(0,Math.ceil((new Date(profile.trial_ends_at)-Date.now())/86400000));return left>0?`${left} day${left===1?"":"s"} left in your trial`:"Trial ended"}
+function showView(v){view=v;document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===v));["discover","mine","profile"].forEach(k=>$(k+"View").classList.toggle("hidden",k!==v));if(v==="profile")renderProfile();if(v==="mine")renderMine()}
+function modal(content){$("modalRoot").innerHTML=`<div class="modalback" id="modalBack"><div class="modal">${content}</div></div>`;$("modalBack").addEventListener("click",e=>{if(e.target.id==="modalBack")closeModal()})}
+function closeModal(){$("modalRoot").innerHTML=""}
+function authModal(){modal(`<h2>Welcome to Crewup</h2><p>Create an account or sign in. New accounts start a 10-day full-feature trial. Both activity fees are waived during the trial.</p><label class="label">Email</label><input id="authEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"><label class="label">Password</label><input id="authPassword" class="field" type="password" autocomplete="current-password" placeholder="At least 6 characters"><div class="actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn secondary" id="loginAction">Sign in</button><button class="btn" id="signupAction">Create account</button></div><div id="authMessage" class="status"></div>`);$("loginAction").onclick=()=>auth("login");$("signupAction").onclick=()=>auth("signup")}
+async function auth(kind){const email=$("authEmail").value.trim(),password=$("authPassword").value;if(!email||password.length<6){$("authMessage").textContent="Enter a valid email and a password with at least 6 characters.";return}const r=kind==="signup"?await db.auth.signUp({email,password}):await db.auth.signInWithPassword({email,password});if(r.error){$("authMessage").textContent=r.error.message;return}if(kind==="signup"&&!r.data.session){$("authMessage").textContent="Check your email to confirm your account, then sign in. Your trial begins when the account is created.";return}closeModal();await loadSession();say(kind==="signup"?"Account created. Your trial has started.":"You're signed in.")}
+async function loadSession(){if(!db)return;const {data}=await db.auth.getSession();currentUser=data.session?.user||null;if(currentUser){await loadProfile()}else profile=null;syncHeader()}
+async function loadProfile(){const {data,error}=await db.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();if(error){say("Couldn't load your account profile. Check the database setup.");return}profile=data}
+function syncHeader(){const signed=!!currentUser;$("authBtn").classList.toggle("hidden",signed);$("signoutBtn").classList.toggle("hidden",!signed);$("trialPill").classList.toggle("hidden",!signed);if(signed)$("trialPill").textContent=trialText();$("createBtn").textContent=signed?"＋ Create activity":"＋ Create activity"}
+function canUseFullFeatures(){if(!currentUser){authModal();return false}if(isTrial())return true;say("Your trial has ended. Paid access must be enabled before creating or joining activities. Payments are not enabled yet.");return false}
+async function refreshData(){if(!db){$("activityGrid").innerHTML=`<div class="empty"><h3>Connect your Crewup database</h3><p>Add your Supabase project URL and publishable key to this file, then run the setup SQL.</p></div>`;syncHeader();return}say("Loading activities…");const [a,p]=await Promise.all([db.from("activities").select("*").order("activity_date",{ascending:true}),db.from("activity_participants").select("activity_id,user_id,participant_name")]);if(a.error||p.error){say("Database setup needs attention: "+(a.error?.message||p.error?.message));$("activityGrid").innerHTML=`<div class="empty"><h3>Almost there</h3><p>Check that the Crewup setup SQL has been run in Supabase.</p></div>`;return}activities=a.data||[];participants=p.data||[];renderDiscover();renderMine();say("")}
+function card(a){const people=participants.filter(p=>p.activity_id===a.id),joined=people.some(p=>p.user_id===currentUser?.id),full=people.length>=a.max_participants;const host=a.created_by===currentUser?.id;return `<article class="activity"><div class="activity-top"><span class="cat">${esc(a.category)}</span><span class="online">${a.is_online?"Online":"In person"}</span></div><h3>${esc(a.title)}</h3><div class="desc">${esc(a.description||"Come meet people and do something fun.")}</div><div class="meta"><span>◷ ${esc(fmtDate(a.activity_date))}</span><span>⌖ ${esc(a.is_online?"Online event":a.location||"Location shared after joining")}</span><span>♧ Hosted by ${esc(a.host_name||"Crewup member")}</span></div><div class="cardfoot"><span class="spots">${people.length} / ${a.max_participants} joined</span>${joined?`<button class="btn secondary" disabled>Joined</button>`:host?`<span class="spots">Your activity</span>`:`<button class="btn" ${full?"disabled":""} onclick="joinActivity('${a.id}')">${full?"Full":"Join activity"}</button>`}</div></article>`}
+function renderDiscover(){const q=$("search").value.toLowerCase(),cat=$("categoryFilter").value,mode=$("modeFilter").value;const filtered=activities.filter(a=>(!q||[a.title,a.description,a.location,a.category].some(x=>String(x||"").toLowerCase().includes(q)))&&(!cat||a.category===cat)&&(!mode||(mode==="online"?a.is_online:!a.is_online))&&new Date(a.activity_date)>new Date());$("activityGrid").innerHTML=filtered.length?filtered.map(card).join(""):`<div class="empty"><h3>No activities yet</h3><p>Be the first to start something. Create an activity and invite your people.</p><button class="btn" onclick="createModal()">Create the first activity</button></div>`}
+function renderMine(){const mine=activities.filter(a=>a.created_by===currentUser?.id||participants.some(p=>p.activity_id===a.id&&p.user_id===currentUser?.id));$("mineGrid").innerHTML=mine.length?mine.map(card).join(""):`<div class="empty"><h3>Your plans will show up here</h3><p>Activities you host or join will appear here after you sign in.</p></div>`}
+function renderProfile(){if(!currentUser){$("profileContent").innerHTML=`<h2>Your Crewup account</h2><p>Sign in to manage your profile, see your trial status and keep track of your activities.</p><button class="btn" onclick="authModal()">Sign in / Join</button>`;return}const end=profile?.trial_ends_at?new Date(profile.trial_ends_at).toLocaleDateString(): "Not set";$("profileContent").innerHTML=`<div class="eyebrow">Your account</div><h2>Good to have you here.</h2><p>${esc(currentUser.email)}</p><div class="metricrow"><div class="metric"><strong>${esc(trialText())}</strong><span>Full-feature trial</span></div><div class="metric"><strong>${activities.filter(a=>a.created_by===currentUser.id).length}</strong><span>Activities hosted</span></div><div class="metric"><strong>${participants.filter(p=>p.user_id===currentUser.id).length}</strong><span>Activities joined</span></div></div><p>Trial end date: <strong>${esc(end)}</strong></p><div class="notice">${isTrial()?"Your trial is active. Host publishing and participant confirmation fees are waived during this period.":"Your trial has ended. Secure paid access is not yet switched on, so no payment will be requested by this prototype."}</div><p>Profile editing, gender preferences and advanced safety features are planned next. Don't share sensitive personal information in activity descriptions.</p>`}
+function createModal(){if(!canUseFullFeatures())return;modal(`<h2>Create an activity</h2><p>Tell people what you want to do. During your 10-day trial, the host publishing fee is waived.</p><form id="createForm"><div class="formgrid"><div class="full"><label class="label">Activity name *</label><input required maxlength="90" id="actTitle" class="field" placeholder="e.g. Saturday board-game café"></div><div><label class="label">Category *</label><select required id="actCategory" class="field"><option>Board games</option><option>Online games</option><option>Movie / series night</option><option>Outdoor sports</option><option>Study group</option><option>Other</option></select></div><div><label class="label">Format *</label><select id="actMode" class="field"><option value="offline">In person</option><option value="online">Online</option></select></div><div><label class="label">Date and time *</label><input required id="actDate" class="field" type="datetime-local" min="${new Date(Date.now()+3600000).toISOString().slice(0,16)}"></div><div><label class="label">Maximum people *</label><input required id="actMax" class="field" type="number" min="2" max="100" value="8"></div><div class="full" id="locationWrap"><label class="label">Location *</label><input id="actLocation" class="field" maxlength="160" placeholder="Area, venue or meeting point"></div><div class="full"><label class="label">Description</label><textarea id="actDesc" class="field" rows="3" maxlength="600" placeholder="What should people know before joining?"></textarea></div></div><div class="actions"><button type="button" class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" type="submit">Publish activity</button></div><div id="createMessage" class="status"></div></form>`);$("actMode").onchange=()=>{$("locationWrap").classList.toggle("hidden",$("actMode").value==="online")};$("createForm").onsubmit=submitActivity}
+async function submitActivity(e){e.preventDefault();if(!canUseFullFeatures())return;const online=$("actMode").value==="online",date=new Date($("actDate").value);if(Number.isNaN(date.getTime())||date<=new Date()){ $("createMessage").textContent="Choose a future date and time.";return}const payload={title:$("actTitle").value.trim(),description:$("actDesc").value.trim(),category:$("actCategory").value,location:online?null:$("actLocation").value.trim(),is_online:online,activity_date:date.toISOString(),max_participants:Number($("actMax").value),created_by:currentUser.id,host_name:currentUser.email.split("@")[0]};if(!payload.title||(!online&&!payload.location)){ $("createMessage").textContent="Add a title and a location for in-person activities.";return}const {error}=await db.from("activities").insert(payload);if(error){$("createMessage").textContent=error.message;return}closeModal();await refreshData();showView("discover");say("Your activity is published. Invite your crew!")}
+async function joinActivity(id){if(!canUseFullFeatures())return;const a=activities.find(x=>x.id===id);if(!a)return;const count=participants.filter(p=>p.activity_id===id).length;if(count>=a.max_participants){say("Sorry, this activity is full.");return}const {error}=await db.from("activity_participants").insert({activity_id:id,user_id:currentUser.id,participant_name:currentUser.email.split("@")[0]});if(error){say(error.code==="23505"?"You've already joined this activity.":error.message);return}await refreshData();say("You're in! Your participation is confirmed. During your trial, the confirmation fee is waived.")}
+$("authBtn").onclick=()=>db?authModal():say("First add your Supabase project URL and publishable key to the file.");
+$("signoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;profile=null;syncHeader();await refreshData();showView("discover");say("You've signed out.")};
+$("createBtn").onclick=()=>currentUser?createModal():authModal();
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+["search","categoryFilter","modeFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",renderDiscover));
+(async()=>{if(!configured){await refreshData();return}db.auth.onAuthStateChange(async()=>{await loadSession();await refreshData()});await loadSession();await refreshData()})();
 </script>
-</body>
-</html>
+</body></html>
