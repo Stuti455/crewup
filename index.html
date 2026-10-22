@@ -273,8 +273,106 @@ async function auth(kind) {
     ? "Account created. Your trial has started."
     : "You're signed in.");
 }
-async function loadSession(){if(!db)return;const {data}=await db.auth.getSession();currentUser=data.session?.user||null;if(currentUser){await loadProfile()}else profile=null;syncHeader()}
-async function loadProfile(){const {data,error}=await db.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();if(error){say("Couldn't load your account profile. Check the database setup.");return}profile=data}
+
+async function loadSession() {
+  if (!db) return;
+
+  const { data } = await db.auth.getSession();
+  currentUser = data.session?.user || null;
+
+  if (currentUser) {
+    await loadProfile();
+
+    const gender = currentUser.user_metadata?.gender;
+
+    if (!gender) {
+      modal(`
+        <h2>Complete your profile</h2>
+        <p>Please select your gender to finish setting up your account. You don't need to create a new account.</p>
+
+        <label class="label">Gender *</label>
+        <select id="existingUserGender" class="field">
+          <option value="">Select your gender</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="non_binary">Non-binary</option>
+          <option value="prefer_not_to_say">Prefer not to say</option>
+        </select>
+
+        <div id="existingGenderMessage" class="status"></div>
+
+        <div class="actions">
+          <button class="btn" id="saveExistingGender">Save gender</button>
+        </div>
+      `);
+
+      $("saveExistingGender").onclick = async () => {
+        const selectedGender = $("existingUserGender").value;
+
+        if (!selectedGender) {
+          $("existingGenderMessage").textContent =
+            "Please select an option first.";
+          return;
+        }
+
+        $("saveExistingGender").disabled = true;
+        $("existingGenderMessage").textContent = "Saving...";
+
+        const { data, error } = await db.auth.updateUser({
+          data: { gender: selectedGender }
+        });
+
+        if (error) {
+          $("existingGenderMessage").textContent =
+            "Couldn't save your gender: " + error.message;
+          $("saveExistingGender").disabled = false;
+          return;
+        }
+
+        const { error: refreshError } = await db.auth.refreshSession();
+
+if (refreshError) {
+  $("existingGenderMessage").textContent =
+    "Gender saved, but please sign out and sign in again to refresh your session.";
+  $("saveExistingGender").disabled = false;
+  return;
+}
+
+const { data: userData, error: userError } = await db.auth.getUser();
+
+if (userError || !userData.user) {
+  $("existingGenderMessage").textContent =
+    "Gender saved. Please sign out and sign in again.";
+  $("saveExistingGender").disabled = false;
+  return;
+}
+
+currentUser = userData.user;
+closeModal();
+say("Your gender has been saved successfully.");
+      };
+    }
+  } else {
+    profile = null;
+  }
+
+  syncHeader();
+}
+
+async function loadProfile() {
+  const { data, error } = await db
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    say("Couldn't load your account profile. Check the database setup.");
+    return;
+  }
+
+  profile = data;
+}
 function syncHeader(){const signed=!!currentUser;$("authBtn").classList.toggle("hidden",signed);$("signoutBtn").classList.toggle("hidden",!signed);$("trialPill").classList.toggle("hidden",!signed);if(signed)$("trialPill").textContent=trialText();$("createBtn").textContent=signed?"＋ Post a plan":"＋ Post a plan"}
 function canUseFullFeatures(){if(!currentUser){authModal();return false}if(isTrial())return true;say("Your trial has ended. Paid access must be enabled before creating or joining activities. Payments are not enabled yet.");return false}
 async function refreshData(){if(!db){$("activityGrid").innerHTML=`<div class="empty"><h3>Connect your Crewup database</h3><p>Add your Supabase project URL and publishable key to this file, then run the setup SQL.</p></div>`;syncHeader();return}say("Loading activities…");const [a,p]=await Promise.all([db.from("activities").select("*").order("activity_date",{ascending:true}),db.from("activity_participants").select("activity_id,user_id,participant_name")]);if(a.error||p.error){say("Database setup needs attention: "+(a.error?.message||p.error?.message));$("activityGrid").innerHTML=`<div class="empty"><h3>Almost there</h3><p>Check that the Crewup setup SQL has been run in Supabase.</p></div>`;return}activities=a.data||[];participants=p.data||[];renderDiscover();renderMine();say("")}
