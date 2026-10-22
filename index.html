@@ -182,8 +182,97 @@ function trialText(){if(!profile?.trial_ends_at)return "Trial begins when you si
 function showView(v){view=v;document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===v));["discover","mine","profile"].forEach(k=>$(k+"View").classList.toggle("hidden",k!==v));if(v==="profile")renderProfile();if(v==="mine")renderMine();if(v!=="profile")document.getElementById("explore").scrollIntoView({behavior:"smooth",block:"start"})}
 function modal(content){$("modalRoot").innerHTML=`<div class="modalback" id="modalBack"><div class="modal">${content}</div></div>`;$("modalBack").addEventListener("click",e=>{if(e.target.id==="modalBack")closeModal()})}
 function closeModal(){$("modalRoot").innerHTML=""}
-function authModal(){modal(`<h2>Welcome to Crewup ✳</h2><p>Create an account or sign in. New accounts start a 10-day full-feature trial.</p><label class="label">Email</label><input id="authEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"><label class="label">Password</label><input id="authPassword" class="field" type="password" autocomplete="current-password" placeholder="At least 6 characters"><div class="actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn secondary" id="loginAction">Sign in</button><button class="btn" id="signupAction">Create account</button></div><div id="authMessage" class="status"></div>`);$("loginAction").onclick=()=>auth("login");$("signupAction").onclick=()=>auth("signup")}
-async function auth(kind){const email=$("authEmail").value.trim(),password=$("authPassword").value;if(!email||password.length<6){$("authMessage").textContent="Enter a valid email and a password with at least 6 characters.";return}const r=kind==="signup"?await db.auth.signUp({email,password}):await db.auth.signInWithPassword({email,password});if(r.error){$("authMessage").textContent=r.error.message;return}if(kind==="signup"&&!r.data.session){$("authMessage").textContent="Check your email to confirm your account, then sign in. Your trial begins when the account is created.";return}closeModal();await loadSession();say(kind==="signup"?"Account created. Your trial has started.":"You're signed in.")}
+
+function authModal() {
+  modal(`<h2>Welcome to Crewup ✳</h2>
+    <p>Create an account or sign in. New accounts start a 10-day full-feature trial.</p>
+
+    <label class="label">Email</label>
+    <input id="authEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com">
+
+    <label class="label">Password</label>
+    <input id="authPassword" class="field" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+
+    <div id="genderWrap" class="hidden">
+      <label class="label">Gender *</label>
+      <select id="authGender" class="field">
+        <option value="">Select your gender</option>
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+        <option value="non_binary">Non-binary</option>
+        <option value="prefer_not_to_say">Prefer not to say</option>
+      </select>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn secondary" id="loginAction">Sign in</button>
+      <button class="btn" id="signupAction">Create account</button>
+    </div>
+
+    <div id="authMessage" class="status"></div>`);
+
+  $("loginAction").onclick = () => {
+    $("genderWrap").classList.add("hidden");
+    auth("login");
+  };
+
+  $("signupAction").onclick = () => {
+    if ($("genderWrap").classList.contains("hidden")) {
+      $("genderWrap").classList.remove("hidden");
+      $("authMessage").textContent =
+        "Choose your gender, then click Create account again.";
+      return;
+    }
+
+    auth("signup");
+  };
+}
+
+async function auth(kind) {
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+  const gender = kind === "signup" ? $("authGender").value : "";
+
+  if (!email || password.length < 6) {
+    $("authMessage").textContent =
+      "Enter a valid email and a password with at least 6 characters.";
+    return;
+  }
+
+  if (kind === "signup" && !gender) {
+    $("genderWrap").classList.remove("hidden");
+    $("authMessage").textContent = "Please select your gender to create an account.";
+    return;
+  }
+
+  const r = kind === "signup"
+    ? await db.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { gender }
+        }
+      })
+    : await db.auth.signInWithPassword({ email, password });
+
+  if (r.error) {
+    $("authMessage").textContent = r.error.message;
+    return;
+  }
+
+  if (kind === "signup" && !r.data.session) {
+    $("authMessage").textContent =
+      "Check your email to confirm your account, then sign in. Your gender has been saved with your signup details.";
+    return;
+  }
+
+  closeModal();
+  await loadSession();
+  say(kind === "signup"
+    ? "Account created. Your trial has started."
+    : "You're signed in.");
+}
 async function loadSession(){if(!db)return;const {data}=await db.auth.getSession();currentUser=data.session?.user||null;if(currentUser){await loadProfile()}else profile=null;syncHeader()}
 async function loadProfile(){const {data,error}=await db.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();if(error){say("Couldn't load your account profile. Check the database setup.");return}profile=data}
 function syncHeader(){const signed=!!currentUser;$("authBtn").classList.toggle("hidden",signed);$("signoutBtn").classList.toggle("hidden",!signed);$("trialPill").classList.toggle("hidden",!signed);if(signed)$("trialPill").textContent=trialText();$("createBtn").textContent=signed?"＋ Post a plan":"＋ Post a plan"}
@@ -203,7 +292,43 @@ function renderMine(){const mine=activities.filter(a=>a.created_by===currentUser
 function renderProfile(){if(!currentUser){$("profileContent").innerHTML=`<h2>Your Crewup account</h2><p>Sign in to manage your profile, see your trial status and keep track of your activities.</p><button class="btn" onclick="authModal()">Sign in / Join</button>`;return}const end=profile?.trial_ends_at?new Date(profile.trial_ends_at).toLocaleDateString():"Not set";$("profileContent").innerHTML=`<div class="eyebrow">Your account</div><h2>Good to have you here.</h2><p>${esc(currentUser.email)}</p><div class="metricrow"><div class="metric"><strong>${esc(trialText())}</strong><span>Full-feature trial</span></div><div class="metric"><strong>${activities.filter(a=>a.created_by===currentUser.id).length}</strong><span>Activities hosted</span></div><div class="metric"><strong>${participants.filter(p=>p.user_id===currentUser.id).length}</strong><span>Activities joined</span></div></div><p>Trial end date: <strong>${esc(end)}</strong></p><div class="notice">${isTrial()?"Your trial is active. Host publishing and participant confirmation fees are waived during this period.":"Your trial has ended. Secure paid access is not yet switched on, so no payment will be requested by this prototype."}</div><p>Profile editing, gender preferences and advanced safety features are planned next. Don't share sensitive personal information in activity descriptions.</p>`}
 function createModal(){if(!canUseFullFeatures())return;modal(`<h2>Post a plan ✳</h2><p>Tell people what you want to do. During your 10-day trial, the host publishing fee is waived.</p><form id="createForm"><div class="formgrid"><div class="full"><label class="label">Activity name *</label><input required maxlength="90" id="actTitle" class="field" placeholder="e.g. Friday board-game night"></div><div><label class="label">Category *</label><select required id="actCategory" class="field"><option>Board games</option><option>Online games</option><option>Movie / series night</option><option>Outdoor sports</option><option>Study group</option><option>Other</option></select></div><div><label class="label">Format *</label><select id="actMode" class="field"><option value="offline">In person</option><option value="online">Online</option></select></div><div><label class="label">Date and time *</label><input required id="actDate" class="field" type="datetime-local" min="${new Date(Date.now()+3600000).toISOString().slice(0,16)}"></div><div><label class="label">Maximum people *</label><input required id="actMax" class="field" type="number" min="2" max="100" value="8"></div><div class="full" id="locationWrap"><label class="label">Location *</label><input id="actLocation" class="field" maxlength="160" placeholder="Area, venue or meeting point"></div><div class="full"><label style="display:flex;gap:10px;align-items:flex-start;font-weight:700"><input id="actWomenOnly" type="checkbox" style="margin-top:4px;accent-color:#8f2945;width:17px;height:17px"><span>Women-only activity <span style="display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px">Mark this plan for women-only discovery. Please note: this prototype does not verify gender or automatically restrict who can join.</span></span></label></div><div class="full"><label class="label">Description</label><textarea id="actDesc" class="field" rows="3" maxlength="600" placeholder="What should people know before joining?"></textarea></div></div><div class="actions"><button type="button" class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" type="submit">Publish plan ↗</button></div><div id="createMessage" class="status"></div></form>`);$("actMode").onchange=()=>{$("locationWrap").classList.toggle("hidden",$("actMode").value==="online")};$("createForm").onsubmit=submitActivity}
 async function submitActivity(e){e.preventDefault();if(!canUseFullFeatures())return;const online=$("actMode").value==="online",date=new Date($("actDate").value);if(Number.isNaN(date.getTime())||date<=new Date()){$("createMessage").textContent="Choose a future date and time.";return}const payload={title:$("actTitle").value.trim(),description:$("actDesc").value.trim(),category:$("actCategory").value,location:online?null:$("actLocation").value.trim(),is_online:online,activity_date:date.toISOString(),max_participants:Number($("actMax").value),women_only:$("actWomenOnly").checked,created_by:currentUser.id,host_name:currentUser.email.split("@")[0]};if(!payload.title||(!online&&!payload.location)){$("createMessage").textContent="Add a title and a location for in-person activities.";return}const {error}=await db.from("activities").insert(payload);if(error){$("createMessage").textContent=error.message;return}closeModal();await refreshData();showView("discover");say("Your plan is live. Invite your people!")}
-async function joinActivity(id){if(!canUseFullFeatures())return;const a=activities.find(x=>x.id===id);if(!a)return;const count=participants.filter(p=>p.activity_id===id).length;if(count>=a.max_participants){say("Sorry, this activity is full.");return}const {error}=await db.from("activity_participants").insert({activity_id:id,user_id:currentUser.id,participant_name:currentUser.email.split("@")[0]});if(error){say(error.code==="23505"?"You've already joined this activity.":error.message);return}await refreshData();say("You're in! Your spot is confirmed.")}
+
+async function joinActivity(id) {
+  if (!canUseFullFeatures()) return;
+
+  const a = activities.find(x => x.id === id);
+  if (!a) return;
+
+  const gender = (currentUser.user_metadata?.gender || "").toLowerCase();
+
+  if (a.women_only && gender !== "female") {
+    say("This is a women-only activity. Only users who selected Female can join.");
+    return;
+  }
+
+  const count = participants.filter(p => p.activity_id === id).length;
+
+  if (count >= a.max_participants) {
+    say("Sorry, this activity is full.");
+    return;
+  }
+
+  const { error } = await db.from("activity_participants").insert({
+    activity_id: id,
+    user_id: currentUser.id,
+    participant_name: currentUser.email.split("@")[0]
+  });
+
+  if (error) {
+    say(error.code === "23505"
+      ? "You've already joined this activity."
+      : error.message);
+    return;
+  }
+
+  await refreshData();
+  say("You're in! Your spot is confirmed.");
+}
 async function leaveActivity(id){if(!currentUser){authModal();return}const a=activities.find(x=>x.id===id);if(!a)return;if(a.created_by===currentUser.id){say("Hosts can't leave their own activity. You can manage it from My activities.");return}if(!window.confirm("Leave this activity? Your spot will be released."))return;const {error}=await db.from("activity_participants").delete().eq("activity_id",id).eq("user_id",currentUser.id);if(error){say("Couldn't leave this activity: "+error.message);return}await refreshData();say("You've left the activity. Your spot has been released.")}
 $("authBtn").onclick=()=>db?authModal():say("First add your Supabase project URL and publishable key to the file.");
 $("signoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;profile=null;syncHeader();await refreshData();showView("discover");say("You've signed out.")};
